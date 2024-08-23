@@ -44,7 +44,7 @@ page 54000 "KNH Demo"
 
                 trigger OnAction()
                 var
-                    APIManagement: Codeunit "KNH API Management";
+                    APIManagement: Codeunit "KNH API No Auth Management";
                 begin
                     APIManagement.GetRecords();
                 end;
@@ -58,9 +58,37 @@ page 54000 "KNH Demo"
 
                 trigger OnAction()
                 var
-                    APIManagement: Codeunit "KNH API Management";
+                    APIManagement: Codeunit "KNH API No Auth Management";
                 begin
                     APIManagement.CreateRecords();
+                end;
+            }
+            action(UpdateRecords)
+            {
+                ApplicationArea = All;
+                Caption = 'Update Records';
+                Image = UpdateDescription;
+                ToolTip = 'Update Records';
+
+                trigger OnAction()
+                var
+                    APIManagement: Codeunit "KNH API No Auth Management";
+                begin
+                    APIManagement.UpdateRecords(Rec);
+                end;
+            }
+            action(DeleteRecords)
+            {
+                ApplicationArea = All;
+                Caption = 'Delete Records';
+                Image = DeleteRow;
+                ToolTip = 'Delete Records';
+
+                trigger OnAction()
+                var
+                    APIManagement: Codeunit "KNH API No Auth Management";
+                begin
+                    APIManagement.DeleteRecords(Rec);
                 end;
             }
         }
@@ -68,6 +96,8 @@ page 54000 "KNH Demo"
         {
             actionref(GetRecords_Ref; GetRecords) { }
             actionref(CreateRecords_Ref; CreateRecords) { }
+            actionref(UpdateRecords_Ref; UpdateRecords) { }
+            actionref(DeleteRecords_Ref; DeleteRecords) { }
         }
     }
 }

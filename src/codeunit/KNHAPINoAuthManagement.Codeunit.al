@@ -1,42 +1,54 @@
-codeunit 54000 "KNH API Management"
+codeunit 54000 "KNH API No Auth Management"
 {
     procedure GetRecords()
     var
-        Client: HttpClient;
-        Request: HttpRequestMessage;
-        Response: HttpResponseMessage;
+        Content: HttpContent;
+        HttpMethod: Enum "Http Method";
         OutputString: Text;
+        TargetUrlLbl: Label 'https://dummy.restapiexample.com/api/v1/create';
     begin
-        Request.SetRequestUri('https://dummy.restapiexample.com/api/v1/employees'); //Endpoint for read
-        Request.Method := 'Get'; //Gets or sets the method type as defined in the HTTP standard
-        if Client.Send(Request, Response) then //Sends an HTTP request
-            if Response.IsSuccessStatusCode() then begin
-                Response.Content.ReadAs(OutputString); //Read content (json records) and place in text variable 
-                ParseEmployeeResponse(OutputString);
-            end else
-                Message('Error: %1', Response.ReasonPhrase);
+        KNHAPIRequestResponse.SetRequestHeaders(Content, '');
+        OutputString := KNHAPIRequestResponse.CallApiEndpoint(Content, StrSubstNo(TargetUrlLbl), HttpMethod::GET);
+        ParseJsonResponse(OutputString);
     end;
 
     procedure CreateRecords()
     var
-        Client: HttpClient;
         Content: HttpContent;
-        Request: HttpRequestMessage;
-        Response: HttpResponseMessage;
+        HttpMethod: Enum "Http Method";
         OutputString: Text;
+        TargetUrlLbl: Label 'https://dummy.restapiexample.com/api/v1/create';
     begin
-        Request.SetRequestUri('https://dummy.restapiexample.com/api/v1/create'); //Endpoint for create
-        Request.Method := 'Post'; //Gets or sets the method type as defined in the HTTP standard
-        Content.WriteFrom(CreateEmployeeRecords());
-        if Client.Send(Request, Response) then //Sends an HTTP request
-            if Response.IsSuccessStatusCode() then begin
-                Response.Content.ReadAs(OutputString); //Read content (json records) and place in text variable 
-                ParseEmployeeResponse(OutputString);
-            end else
-                Message('Error: %1', Response.ReasonPhrase);
+        KNHAPIRequestResponse.SetRequestHeaders(Content, CreateEmployeeRecords());
+        Outputstring := KNHAPIRequestResponse.CallApiEndpoint(Content, StrSubstNo(TargetUrlLbl), HttpMethod::POST);
+        Message('%1', OutputString)
     end;
 
-    local procedure ParseEmployeeResponse(OutputString: Text)
+    procedure UpdateRecords(DemoData: Record "KNH Demo")
+    var
+        Content: HttpContent;
+        HttpMethod: Enum "Http Method";
+        OutputString: Text;
+        TargetUrlLbl: Label 'https://dummy.restapiexample.com/api/v1/update/%1', Comment = '%1 = DemoData.Id';
+    begin
+        KNHAPIRequestResponse.SetRequestHeaders(Content, UpdateEmployeeRecords());
+        OutputString := KNHAPIRequestResponse.CallApiEndpoint(Content, StrSubstNo(TargetUrlLbl, DemoData.Id), HttpMethod::PUT);
+        Message('%1', OutputString);
+    end;
+
+    procedure DeleteRecords(DemoData: Record "KNH Demo")
+    var
+        Content: HttpContent;
+        HttpMethod: Enum "Http Method";
+        OutputString: Text;
+        TargetUrlLbl: Label 'https://dummy.restapiexample.com/api/v1/delete/%1', Comment = '%1 = DemoData.Id';
+    begin
+        KNHAPIRequestResponse.SetRequestHeaders(Content, '');
+        OutputString := KNHAPIRequestResponse.CallApiEndpoint(Content, StrSubstNo(TargetUrlLbl, DemoData.Id), HttpMethod::DELETE);
+        Message('%1', OutputString)
+    end;
+
+    local procedure ParseJsonResponse(OutputString: Text)
     var
         EmployeeJson, EmployeeObject : JsonObject;
         StatusToken, EmployeeToken, EmployeesToken, ResultToken : JsonToken;
@@ -71,11 +83,11 @@ codeunit 54000 "KNH API Management"
             EmployeeObject.Get('employee_age', ResultToken); //Get employee age field from json object and place in another json object
             ResponseAge := ResultToken.AsValue().AsInteger(); //Convert employee age field in json object to integer variable 
 
-            WriteRecordsInTable(ResponseId, ResponseName, ResponseSalary, ResponseAge);
+            CreateRecordsInDemoTable(ResponseId, ResponseName, ResponseSalary, ResponseAge);
         end;
     end;
 
-    local procedure WriteRecordsInTable(ResponseId: Integer; ResponseName: Text[50]; ResponseSalary: Decimal; ResponseAge: Integer)
+    local procedure CreateRecordsInDemoTable(ResponseId: Integer; ResponseName: Text[50]; ResponseSalary: Decimal; ResponseAge: Integer)
     var
         KNHDemo: Record "KNH Demo";
     begin
@@ -93,7 +105,7 @@ codeunit 54000 "KNH API Management"
         ClearAll();
     end;
 
-    procedure CreateEmployeeRecords() NewRecord: Text
+    local procedure CreateEmployeeRecords() NewRecord: Text
     var
         EmployeeRecord: JsonObject;
     begin
@@ -101,6 +113,18 @@ codeunit 54000 "KNH API Management"
         EmployeeRecord.Add('employee_salary', '45000');
         EmployeeRecord.Add('employee_age', '35');
         EmployeeRecord.WriteTo(NewRecord);
-        Message(NewRecord);
     end;
+
+    local procedure UpdateEmployeeRecords() NewRecord: Text
+    var
+        EmployeeRecord: JsonObject;
+    begin
+        EmployeeRecord.Add('employee_name', 'John');
+        EmployeeRecord.Add('employee_salary', '60000');
+        EmployeeRecord.Add('employee_age', '55');
+        EmployeeRecord.WriteTo(NewRecord);
+    end;
+
+    var
+        KNHAPIRequestResponse: Codeunit "KNH API Request Response";
 }

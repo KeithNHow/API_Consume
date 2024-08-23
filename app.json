@@ -1,7 +1,7 @@
 {
   "id": "5e871059-59c4-4c12-8ef5-a673cd551b4c",
   "name": "API-Consume",
-  "publisher": "Default Publisher",
+  "publisher": "KeithHow",
   "version": "1.0.0.0",
   "brief": "",
   "description": "",
@@ -9,7 +9,7 @@
   "EULA": "",
   "help": "",
   "url": "",
-  "logo": "",
+  "logo": "./logo/KNH.jpg",
   "dependencies": [],
   "screenshots": [],
   "platform": "1.0.0.0",
